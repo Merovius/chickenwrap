@@ -3,7 +3,6 @@
 ;; See LICENSE for details and README.md for usage
 
 (use medea)
-(use miscmacros)
 (use environments)
 
 ;; First we define an execution-environment for the transformers
@@ -42,9 +41,10 @@
 
 ; We throw away the first two lines, the version-information and the inital \#[
 (pass-on-first-two-lines)
-(while #t
-       (let ((line (read-statusline)))
-	 (for-each (lambda (fn)
-		     (set! line (fn line)))
-		   line-transformers)
-	 (write-statusline line)))
+(let loop ()
+  (let ((line (read-statusline)))
+    (for-each (lambda (fn)
+		(set! line (fn line)))
+	      line-transformers)
+    (write-statusline line)
+    (loop)))
