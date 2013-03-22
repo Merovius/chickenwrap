@@ -30,7 +30,7 @@
 
 (define write-statusline (lambda (blocks)
 			   (write-json (list->vector blocks))
-			   (format #t "~N")))
+			   (format #t "~N,")))
 
 (define pass-on-first-two-lines (lambda ()
 				  (write-line (read-line))
