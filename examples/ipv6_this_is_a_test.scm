@@ -1,0 +1,6 @@
+(transform-line (lambda (line)
+                  (for-each (lambda (block)
+                              (if (string=? (alist-ref 'name block) "ipv6")
+                                (alist-update! 'full_text "DIES IST EIN TEST" block)))
+                            line)
+                  line))
