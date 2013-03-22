@@ -11,9 +11,7 @@
 ; Define a hook for full-line-transformations
 (define line-transformers '())
 (define (transform-line fn)
-  (set! line-transformers (if (eqv? line-transformers '())
-			      (list fn)
-			      (join (list line-transformers (list fn))))))
+  (set! line-transformers (append line-transformers (list fn))))
 (environment-extend! load-env 'transform-line transform-line #f)
 
 
