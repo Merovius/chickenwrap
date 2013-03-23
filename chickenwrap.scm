@@ -14,6 +14,9 @@
   (set! line-transformers (append line-transformers (list fn))))
 (environment-extend! load-env 'transform-line transform-line #f)
 
+; Define a hook for single-block-transformations
+(define block-transformers '())
+
 
 ;; Load all transformers in $HOME/.config/chickenwrap
 (for-each (lambda (file)
@@ -22,14 +25,27 @@
 	  (glob (format "~A/.config/chickenwrap/*.scm" (get-environment-variable "HOME"))))
 
 
+;; Reconfigure medea to use lists for arrays and hashtables for objects
+(alist-update! 'array identity (json-parsers)) ; parse arrays into lists
+(alist-update! 'object alist->hash-table (json-parsers)) ; parse objects into hash-tables
+
+(let ((json-unparse-alist (alist-ref list? (json-unparsers))) ; save the alist-unparser
+      (json-unparse-vector (alist-ref vector? (json-unparsers)))) ; and the vector-unparser
+  (json-unparsers (alist-update! hash-table? (lambda (h)
+					       (json-unparse-alist (hash-table->alist h)))
+				 (json-unparsers))) ; convert hash-tables to alists and call the saved unparser
+  (json-unparsers (alist-update! list? (lambda (l)
+					 (json-unparse-vector (list->vector l)))
+				 (json-unparsers)))) ; convert lists to vectors and call the saved unparser
+      
 ;; We need a few helpers
 (define read-statusline (lambda ()
 			  (if (char=? (peek-char) #\,)
 			      (read-char))
-			  (vector->list (read-json (read-line)))))
+			  (read-json (read-line))))
 
 (define write-statusline (lambda (blocks)
-			   (write-json (list->vector blocks))
+			   (write-json blocks)
 			   (format #t "~N,")))
 
 (define pass-on-first-two-lines (lambda ()
